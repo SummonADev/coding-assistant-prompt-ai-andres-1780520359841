@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.env
+.env.local
+__pycache__/
+chroma_db/
+.venv/
+*.pyc
+node_modules
+.npm-cache
+.cache
+dist
