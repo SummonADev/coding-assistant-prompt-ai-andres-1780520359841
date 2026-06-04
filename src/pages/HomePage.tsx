@@ -23,7 +23,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex min-h-screen bg-[#fafafa] mesh-gradient">
       <Sidebar
         ticker={ticker}
         setTicker={setTicker}
@@ -40,14 +40,20 @@ export default function HomePage() {
         )}
         {status === 'error' && (
           <div className="flex items-center justify-center min-h-screen p-8">
-            <div className="max-w-lg w-full bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-              <p className="text-red-700 text-base font-medium">{error}</p>
-              <button
-                onClick={handleReset}
-                className="mt-4 px-5 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
-              >
-                Try Another Ticker
-              </button>
+            <div className="max-w-md w-full animate-scale-in">
+              <div className="glass rounded-2xl p-8 text-center shadow-lg">
+                <div className="w-14 h-14 mx-auto mb-5 rounded-full bg-red-50 flex items-center justify-center">
+                  <span className="text-2xl">⚠️</span>
+                </div>
+                <h3 className="text-slate-900 font-semibold text-lg mb-2">Something went wrong</h3>
+                <p className="text-slate-500 text-sm leading-relaxed mb-6">{error}</p>
+                <button
+                  onClick={handleReset}
+                  className="px-6 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-medium hover:bg-slate-800 transition-all duration-200 active:scale-[0.98]"
+                >
+                  Try Another Ticker
+                </button>
+              </div>
             </div>
           </div>
         )}

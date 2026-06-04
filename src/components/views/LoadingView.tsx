@@ -4,62 +4,76 @@ type LoadingViewProps = {
   step: AnalysisStep;
 };
 
+const STEPS = [
+  { p: 0.1, label: 'SEC EDGAR lookup', icon: '🔍' },
+  { p: 0.25, label: '10-K download', icon: '📥' },
+  { p: 0.4, label: 'Chunk & embed', icon: '🧩' },
+  { p: 0.55, label: 'Financial health', icon: '💰' },
+  { p: 0.65, label: 'Risk factors', icon: '⚠️' },
+  { p: 0.75, label: 'Red flags', icon: '🚩' },
+  { p: 0.85, label: 'Competitive position', icon: '🏆' },
+  { p: 0.95, label: 'Executive summary', icon: '📋' },
+];
+
 export default function LoadingView({ step }: LoadingViewProps) {
   const pct = Math.round(step.progress * 100);
 
   return (
     <div className="min-h-screen flex items-center justify-center px-8">
-      <div className="w-full max-w-lg">
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-navy/10 rounded-full mb-5">
-            <span className="text-3xl animate-pulse">📊</span>
+      <div className="w-full max-w-md animate-fade-in-up">
+        {/* Animated orb */}
+        <div className="flex justify-center mb-10">
+          <div className="relative w-20 h-20">
+            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-violet-500 to-blue-500 opacity-20 animate-ping" style={{ animationDuration: '2s' }} />
+            <div className="absolute inset-2 rounded-full bg-gradient-to-br from-violet-500 to-blue-500 opacity-30 animate-pulse" />
+            <div className="absolute inset-4 rounded-full bg-gradient-to-br from-violet-500 to-blue-600 flex items-center justify-center shadow-lg shadow-violet-500/30">
+              <span className="text-white font-bold text-sm">{pct}%</span>
+            </div>
           </div>
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">Generating Due Diligence Memo</h2>
-          <p className="text-slate-500 text-sm">Analyzing SEC filings and synthesizing insights...</p>
+        </div>
+
+        {/* Text */}
+        <div className="text-center mb-8">
+          <h2 className="text-xl font-semibold text-slate-900 mb-1.5 tracking-tight">Analyzing filing</h2>
+          <p className="text-slate-400 text-sm">{step.label}</p>
         </div>
 
         {/* Progress bar */}
-        <div className="bg-slate-200 rounded-full h-2.5 mb-3 overflow-hidden">
+        <div className="bg-slate-100 rounded-full h-1 mb-8 overflow-hidden">
           <div
-            className="bg-navy h-full rounded-full transition-all duration-700 ease-in-out"
+            className="bg-gradient-to-r from-violet-500 to-blue-500 h-full rounded-full transition-all duration-1000 ease-out"
             style={{ width: `${pct}%` }}
           />
         </div>
-        <div className="flex justify-between items-center mb-8">
-          <p className="text-slate-600 text-sm font-medium">{step.label}</p>
-          <span className="text-navy font-bold text-sm">{pct}%</span>
-        </div>
 
-        {/* Steps list */}
-        <div className="bg-white rounded-xl border border-slate-100 divide-y divide-slate-50 shadow-sm">
-          {[
-            { p: 0.1, label: 'SEC EDGAR lookup' },
-            { p: 0.25, label: '10-K download' },
-            { p: 0.4, label: 'Chunk & embed' },
-            { p: 0.55, label: 'Financial health' },
-            { p: 0.65, label: 'Risk factors' },
-            { p: 0.75, label: 'Red flags' },
-            { p: 0.85, label: 'Competitive position' },
-            { p: 0.95, label: 'Executive summary' },
-          ].map((s) => {
+        {/* Steps */}
+        <div className="glass rounded-2xl overflow-hidden shadow-sm">
+          {STEPS.map((s) => {
             const done = step.progress > s.p;
             const active = Math.abs(step.progress - s.p) < 0.01;
             return (
-              <div key={s.label} className="flex items-center gap-3 px-4 py-2.5">
-                <span
-                  className={`w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0 ${
-                    done
-                      ? 'bg-emerald-500 text-white'
-                      : active
-                      ? 'bg-navy text-white animate-pulse'
-                      : 'bg-slate-100 text-slate-400'
-                  }`}
-                >
-                  {done ? '✓' : ''}
+              <div
+                key={s.label}
+                className={`flex items-center gap-3 px-5 py-3 transition-all duration-300 ${
+                  active ? 'bg-violet-50/80' : ''
+                }`}
+              >
+                <span className="text-sm w-5 text-center flex-shrink-0">
+                  {done ? (
+                    <span className="text-emerald-500">✓</span>
+                  ) : active ? (
+                    <span className="inline-block w-2 h-2 bg-violet-500 rounded-full animate-pulse" />
+                  ) : (
+                    <span className="inline-block w-2 h-2 bg-slate-200 rounded-full" />
+                  )}
                 </span>
                 <span
-                  className={`text-sm ${
-                    done ? 'text-slate-400 line-through' : active ? 'text-navy font-semibold' : 'text-slate-400'
+                  className={`text-sm transition-colors duration-300 ${
+                    done
+                      ? 'text-slate-400'
+                      : active
+                      ? 'text-violet-700 font-medium'
+                      : 'text-slate-400'
                   }`}
                 >
                   {s.label}

@@ -1,80 +1,82 @@
-import { FileSearch, Cpu, BarChart3, ChevronRight } from 'lucide-react';
+import { ArrowRight, FileSearch, Cpu, BarChart3 } from 'lucide-react';
 
 type LandingViewProps = {
   onSelectTicker: (ticker: string) => void;
 };
 
-const EXAMPLE_TICKERS = ['AAPL', 'JPM', 'TSLA'];
+const EXAMPLE_TICKERS = ['AAPL', 'JPM', 'TSLA', 'MSFT', 'NVDA'];
 
 const FEATURES = [
   {
     icon: FileSearch,
-    title: 'What It Does',
-    description:
-      'Automatically fetches the latest 10-K SEC filing for any U.S. public company and extracts the most relevant sections for M&A analysis.',
-    color: 'text-navy',
-    bg: 'bg-blue-50',
+    title: 'SEC Filing Extraction',
+    description: 'Fetches and parses the latest 10-K filing directly from SEC EDGAR in real time.',
+    gradient: 'from-blue-500/10 to-cyan-500/10',
+    iconColor: 'text-blue-600',
   },
   {
     icon: Cpu,
-    title: 'How It Works',
-    description:
-      'Uses Retrieval-Augmented Generation (RAG) to match SEC filing excerpts to targeted queries, then calls Claude to synthesize structured memo sections.',
-    color: 'text-purple-700',
-    bg: 'bg-purple-50',
+    title: 'RAG + Claude Analysis',
+    description: 'Retrieval-augmented generation matches filing excerpts to structured memo queries.',
+    gradient: 'from-violet-500/10 to-purple-500/10',
+    iconColor: 'text-violet-600',
   },
   {
     icon: BarChart3,
-    title: 'Why It Matters',
-    description:
-      'Cuts due diligence prep time from days to minutes. Delivers a consulting-grade memo covering financials, risk factors, red flags, and competitive positioning.',
-    color: 'text-emerald-700',
-    bg: 'bg-emerald-50',
+    title: 'Instant Memo Output',
+    description: 'Generates a consulting-grade briefing covering financials, risks, and positioning.',
+    gradient: 'from-emerald-500/10 to-teal-500/10',
+    iconColor: 'text-emerald-600',
   },
 ];
 
 export default function LandingView({ onSelectTicker }: LandingViewProps) {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-8 py-16">
+    <div className="min-h-screen flex flex-col items-center justify-center px-8 py-20">
       {/* Hero */}
-      <div className="text-center max-w-2xl mb-16">
-        <span className="inline-block px-3 py-1 bg-navy/10 text-navy text-xs font-semibold rounded-full uppercase tracking-widest mb-4">
-          AI-Powered M&A Intelligence
-        </span>
-        <h1 className="text-4xl font-bold text-slate-900 leading-tight mb-4">
-          Due Diligence Memos,{' '}
-          <span className="text-navy">In Minutes.</span>
+      <div className="text-center max-w-xl mb-20 animate-fade-in-up">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-violet-50 border border-violet-100 rounded-full mb-6">
+          <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" />
+          <span className="text-violet-700 text-[11px] font-semibold tracking-wide uppercase">AI-Powered Analysis</span>
+        </div>
+        <h1 className="text-[42px] font-bold text-slate-900 leading-[1.1] tracking-tight mb-5">
+          Due diligence,
+          <br />
+          <span className="bg-gradient-to-r from-violet-600 to-blue-600 bg-clip-text text-transparent">reimagined.</span>
         </h1>
-        <p className="text-slate-500 text-lg leading-relaxed">
-          Enter any S&P 500 ticker to generate a McKinsey-style due diligence briefing from live SEC EDGAR filings — financial health, risk factors, red flags, and competitive positioning.
+        <p className="text-slate-500 text-base leading-relaxed max-w-md mx-auto">
+          Enter any public company ticker to generate a comprehensive M&A briefing from live SEC filings.
         </p>
       </div>
 
       {/* Feature cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl mb-14">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-3xl mb-16 stagger">
         {FEATURES.map((f) => (
-          <div key={f.title} className="bg-white rounded-xl border border-slate-100 p-6 shadow-sm hover:shadow-md transition-shadow">
-            <div className={`w-10 h-10 ${f.bg} rounded-lg flex items-center justify-center mb-4`}>
-              <f.icon className={`w-5 h-5 ${f.color}`} />
+          <div
+            key={f.title}
+            className="group glass rounded-2xl p-5 hover:shadow-lg transition-all duration-300 cursor-default animate-fade-in-up"
+          >
+            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${f.gradient} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
+              <f.icon className={`w-5 h-5 ${f.iconColor}`} />
             </div>
-            <h3 className="text-slate-900 font-semibold text-base mb-2">{f.title}</h3>
-            <p className="text-slate-500 text-sm leading-relaxed">{f.description}</p>
+            <h3 className="text-slate-900 font-semibold text-sm mb-1.5">{f.title}</h3>
+            <p className="text-slate-500 text-[13px] leading-relaxed">{f.description}</p>
           </div>
         ))}
       </div>
 
       {/* Example tickers */}
-      <div className="text-center">
-        <p className="text-slate-400 text-sm mb-4 uppercase tracking-wider font-medium">Try an example</p>
-        <div className="flex gap-3 justify-center flex-wrap">
+      <div className="text-center animate-fade-in" style={{ animationDelay: '300ms' }}>
+        <p className="text-slate-400 text-[11px] mb-4 uppercase tracking-[0.15em] font-medium">Quick Start</p>
+        <div className="flex gap-2.5 justify-center flex-wrap">
           {EXAMPLE_TICKERS.map((t) => (
             <button
               key={t}
               onClick={() => onSelectTicker(t)}
-              className="flex items-center gap-1.5 px-5 py-2.5 bg-white border border-slate-200 rounded-full text-slate-700 font-semibold text-sm hover:border-navy hover:text-navy hover:bg-blue-50 transition-all shadow-sm"
+              className="group flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-200/80 rounded-xl text-slate-600 font-medium text-sm hover:border-violet-300 hover:text-violet-700 hover:bg-violet-50/50 transition-all duration-200 shadow-sm hover:shadow-md active:scale-[0.97]"
             >
               {t}
-              <ChevronRight className="w-3.5 h-3.5" />
+              <ArrowRight className="w-3 h-3 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
             </button>
           ))}
         </div>
