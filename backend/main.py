@@ -11,7 +11,6 @@ from dotenv import load_dotenv
 
 from edgar.client import get_filing_info
 from edgar.parser import download_and_parse_filing
-from analysis.embedder import embed_chunks
 from analysis.retriever import build_or_load_collection
 from analysis.memo_builder import build_memo
 from utils.cache import get_cached_sections, save_sections_cache
@@ -39,9 +38,15 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Allow both the Vite dev server and same-origin production traffic
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:4173",  # vite preview
+        "http://localhost:80",
+        "http://localhost",
+    ],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -96,9 +101,7 @@ async def analyze(request: AnalyzeRequest) -> dict:
             )
         save_sections_cache(ticker, sections)
 
-    logger.info(
-        "Parsed %d sections for %s", len(sections), ticker
-    )
+    logger.info("Parsed %d sections for %s", len(sections), ticker)
 
     try:
         collection = build_or_load_collection(

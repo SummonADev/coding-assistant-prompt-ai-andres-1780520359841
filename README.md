@@ -1,135 +1,137 @@
-# M&A Due Diligence Tool — Running Guide
+# M&A Due Diligence Tool
 
-## Prerequisites
-
-- **Node.js** ≥ 18
-- **Python** ≥ 3.10
-- An **Anthropic API key** (get one at https://console.anthropic.com)
+A full-stack AI-powered M&A due diligence tool. The React frontend fetches real
+10-K filings from SEC EDGAR, processes them through a RAG pipeline, and
+generates structured memos via the Claude API.
 
 ---
 
-## 1. Clone & set up the backend
+## Prerequisites
+
+| Tool | Version |
+|------|---------|
+| Node.js | 18 + |
+| Python | 3.10 + |
+| pip | latest |
+
+---
+
+## 1 — Backend setup
 
 ```bash
-# From the project root, move into the backend directory
+# From the project root
 cd backend
 
 # Create and activate a virtual environment
 python -m venv .venv
-source .venv/bin/activate      # macOS / Linux
-# .venv\Scripts\activate       # Windows PowerShell
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
 
-# Install all Python dependencies
+# Install dependencies
 pip install -r requirements.txt
 
-# Create the .env file with your Anthropic key
-echo "ANTHROPIC_API_KEY=sk-ant-xxxxxxxxxxxx" > .env
+# Add your Anthropic API key
+echo 'ANTHROPIC_API_KEY=sk-ant-...' > .env
 ```
 
----
-
-## 2. Set up the frontend
+### Start the FastAPI server
 
 ```bash
-# From the project root
-npm install
-```
-
----
-
-## 3. Run both servers simultaneously
-
-You need **two terminal windows / tabs** open at the same time.
-
-### Terminal A — FastAPI backend (port 8000)
-
-```bash
-cd backend
-source .venv/bin/activate      # Windows: .venv\Scripts\activate
+# Still inside backend/ with the venv active
 uvicorn main:app --reload --port 8000
 ```
 
-You should see:
-```
-INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
-INFO:     M&A Due Diligence API starting up
-```
+Verify it is running:
 
-### Terminal B — Vite frontend (port 5173)
-
-```bash
-# From the project root
-npm run dev
 ```
-
-You should see:
-```
-  VITE v6.x.x  ready in xxx ms
-  ➜  Local:   http://localhost:5173/
+GET http://localhost:8000/health  →  { "status": "ok" }
 ```
 
 ---
 
-## 4. Verify the backend before using the UI
+## 2 — Frontend setup
 
-With the backend running, test the data pipeline by running the test script:
+Open a **second terminal** at the project root.
 
 ```bash
-# In a third terminal (backend venv activated)
+npm install
+npm run dev
+```
+
+Vite starts on **http://localhost:5173**.
+
+All `/analyze` and `/health` requests from the browser are automatically
+proxied to `http://localhost:8000` by the Vite dev-server proxy defined in
+`vite.config.ts` — no CORS issues, no hard-coded `localhost:8000` URLs in
+browser requests.
+
+---
+
+## 3 — Running both servers at once (optional)
+
+Install `concurrently` once:
+
+```bash
+npm install --save-dev concurrently
+```
+
+Add this script to `package.json`:
+
+```json
+"dev:full": "concurrently -n frontend,backend -c cyan,yellow \"npm run dev\" \"cd backend && .venv/bin/uvicorn main:app --reload --port 8000\""
+```
+
+Then run:
+
+```bash
+npm run dev:full
+```
+
+---
+
+## 4 — Test the data pipeline (no AI layer)
+
+```bash
 cd backend
 python test_backend.py AAPL
 ```
 
-This will print the raw parsed 10-K sections so you can confirm SEC EDGAR
-fetching and HTML parsing work before touching the AI layer.
-
-Once that looks good, open **http://localhost:5173** in your browser, type a
-ticker (e.g. `AAPL`, `MSFT`, `NVDA`), and click **Analyze**.
+This prints the raw parsed 10-K sections to the console so you can verify
+the SEC EDGAR fetch and parser before any Claude calls are made.
 
 ---
 
-## 5. How the two servers talk to each other
+## 5 — Production build
 
-```
-Browser (port 5173)
-  └─ POST http://localhost:8000/analyze  { "ticker": "AAPL" }
-        └─ FastAPI (port 8000)
-              ├─ SEC EDGAR API  →  fetches 10-K HTML
-              ├─ ChromaDB       →  ./backend/chroma_db/AAPL/
-              ├─ sentence-transformers  →  local embeddings
-              └─ Anthropic API  →  Claude generates memo sections
+```bash
+# Build the React app
+npm run build        # outputs to dist/
+
+# Serve with Nginx (see Dockerfile) or:
+npm run preview      # serves dist/ locally on port 4173
 ```
 
-CORS is already configured in `backend/main.py` to allow requests from
-`http://localhost:5173`.
+For production, point Nginx to serve `dist/` as static files **and** reverse-
+proxy `/analyze` → `localhost:8000` so the frontend bundle needs zero
+configuration changes.
 
 ---
 
-## 6. Performance notes
-
-| Run | Expected time |
-|-----|---------------|
-| First analysis for a ticker | 30 – 90 s (downloads + embeds + 5× Claude calls) |
-| Repeat analysis (cached) | < 10 s (skip download + skip re-embedding) |
-
-Cached filing text lives in `backend/.filing_cache/`.
-Cached embeddings live in `backend/chroma_db/{TICKER}/`.
-
-Delete either folder to force a fresh fetch.
-
----
-
-## 7. Environment variables reference
+## Environment variables
 
 | File | Variable | Required |
 |------|----------|----------|
 | `backend/.env` | `ANTHROPIC_API_KEY` | ✅ Yes |
 
-The frontend has no environment variables — it always points to
-`http://localhost:8000`.
+No frontend `.env` file is needed — the Vite proxy handles routing.
 
 ---
 
-## 8. Stopping both servers
+## Troubleshooting
 
-Press **Ctrl + C** in each terminal window.
+| Symptom | Fix |
+|---------|-----|
+| Blank production window / white screen | Make sure `npm run dev` is running and visit **http://localhost:5173**, not port 8000 |
+| `❌ Backend error (HTTP 404)` on a valid ticker | The backend is not running — start `uvicorn` first |
+| `❌ Failed to fetch` in the browser | The Vite dev server is not proxying correctly — confirm `vite.config.ts` has the proxy block |
+| `429 rate limited` | SEC EDGAR is throttling — wait 30 s and retry |
+| Slow first run | Normal — sentence-transformers downloads the model on first use; subsequent runs use the ChromaDB cache |

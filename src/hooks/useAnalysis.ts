@@ -2,7 +2,9 @@ import { useState, useCallback, useRef } from 'react';
 import type { AnalysisResult, AnalysisStatus, AnalysisStep } from '@/types';
 import { ANALYSIS_STEPS } from '@/lib/mockData';
 
-const BACKEND_URL = 'http://localhost:8000';
+// Use a relative path so Vite's dev-server proxy forwards to localhost:8000.
+// In production (Docker / same-origin), this also works without change.
+const BACKEND_URL = '';
 
 type UseAnalysisReturn = {
   status: AnalysisStatus;
